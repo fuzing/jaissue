@@ -120,12 +120,15 @@ class _MyHomePageState extends State<MyHomePage> {
 
     switch (accessType) {
       case AccessType.Asset:
+        print("Playing Asset $assetName");
         audioSource = AudioSource.uri(Uri.parse('asset:///assets/$assetName'));
         break;
       case AccessType.File:
+        print("Playing File $assetName");
         audioSource = AudioSource.uri(Uri.parse('$_docDir/$assetName'));
         break;
       case AccessType.Network:
+        print("Playing Network $assetName");
         audioSource = AudioSource.uri(Uri.parse('$bucketUrl/$assetName'));
         break;
     }
