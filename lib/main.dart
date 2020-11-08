@@ -33,21 +33,85 @@ class MyHomePage extends StatefulWidget {
 class _MyHomePageState extends State<MyHomePage> {
   int _counter = 0;
   AudioPlayer _player;
-  static String _urlBase = 'https://fuzing.s3.amazonaws.com/ja/sample-audio-0';
+  // static String _urlBase = 'https://fuzing.s3.amazonaws.com/ja/sample-audio-0';
 
-  void _playNext() async {
-    _player?.dispose();
+  bool _isPlaying = false;
+
+  // void _playNext() async {
+  //   _player?.dispose();
+  //   _player = AudioPlayer(handleInterruptions: true);
+  //   String fullUrl = '$_urlBase$_counter.m4a';
+  //   print("Loading $fullUrl");
+  //   await _player.load(AudioSource.uri(Uri.parse(fullUrl)));
+  //   _player.play();
+
+  //   // trigger refresh
+  //   setState(() {
+  //     _counter = ++_counter % 10;
+  //   });
+  // }
+
+
+  void _playLoop() async {
+    if (_isPlaying)
+      return;
+
     _player = AudioPlayer(handleInterruptions: true);
-    String fullUrl = '$_urlBase$_counter.m4a';
-    print("Loading $fullUrl");
-    await _player.load(AudioSource.uri(Uri.parse(fullUrl)));
+
+
+    // switch (_type) {
+    //   case 'network':
+    //     print('background play from network - $_uri');
+    //     // see: https://github.com/ryanheise/just_audio/blob/media-source/lib/just_audio.dart#L308
+    //     // await setUrl(_uri);
+    //     audioSource = AudioSource.uri(Uri.parse(_uri));
+    //     break;
+    //   case 'asset':
+    //     print('background play from asset - $_uri');
+    //     // await _audioPlayer.setAsset(_uri);
+    //     audioSource = AudioSource.uri(Uri.parse('asset:///$_uri'));
+    //     break;
+    //   case 'file':
+    //     print('background play from file - $_uri');
+    //     // await _audioPlayer.setFilePath(_uri);
+    //     audioSource = AudioSource.uri(Uri.file(_uri));
+    //     break;
+    //   default:
+    //     print('background play undefined - $_uri');
+    //     break;
+    // }
+
+
+    AudioSource audioSource;
+    final String assetName = '10-second-audio.m4a';
+
+    // Ryan - this seems to work - endlessly looping
+    audioSource = LoopingAudioSource(
+      // child: AudioSource.uri(Uri.parse('asset:///assets/$assetName')),
+      child: AudioSource.uri(Uri.parse('https://fuzing.s3.amazonaws.com/ja/$assetName')),
+      count: 2,
+    );
+
+    // // copy our asset to the file system
+    // final String docPath = (await getApplicationDocumentsDirectory()).path;
+    // File file = File('$$docPath/10-second-audio.m4a');
+    // final fileBytes = await rootBundle.load(path);
+    // final buffer = fileBytes.buffer;
+    // await file.writeAsBytes(
+    //     buffer.asUint8List(fileBytes.offsetInBytes, fileBytes.lengthInBytes));
+
+
+
+    await _player.setLoopMode(LoopMode.all);
+
+    await _player.load(audioSource);
+
     _player.play();
 
-    // trigger refresh
-    setState(() {
-      _counter = ++_counter % 10;
-    });
+    setState(() => _isPlaying = true);
+
   }
+
 
   Future<void> _initSession() async {
     (await AudioSession.instance).configure(AudioSessionConfiguration.music());
@@ -80,7 +144,8 @@ class _MyHomePageState extends State<MyHomePage> {
         ),
       ),
       floatingActionButton: FloatingActionButton(
-        onPressed: _playNext,
+        // onPressed: _playNext,
+        onPressed: _playLoop,
         tooltip: 'Play Next',
         child: Icon(Icons.add),
       ),

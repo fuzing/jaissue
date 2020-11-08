@@ -117,10 +117,12 @@ packages:
   just_audio:
     dependency: "direct main"
     description:
-      name: just_audio
-      url: "https://pub.dartlang.org"
-    source: hosted
-    version: "0.5.5"
+      path: just_audio
+      ref: HEAD
+      resolved-ref: eb3835f540ee6d388447d3a034488eb8036d6ff7
+      url: "git@github.com:ryanheise/just_audio.git"
+    source: git
+    version: "0.5.6"
   just_audio_platform_interface:
     dependency: transitive
     description:
