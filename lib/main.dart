@@ -18,7 +18,7 @@ enum AccessType {
 
 // Ryan - toggling makeItFail will select one of two files
 //    The larger file (just check what makeItFail does) fails.  The smaller one does not.  This is not a peculiarity with the file (I have many other samples that fail).
-const bool makeItFail = false;                         // true selects larger file, false selects smaller file
+const bool makeItFail = true;                         // true selects larger file, false selects smaller file
 const AccessType accessType = AccessType.Asset;       // where do you want the player to play from (see enum above)
 const bool composeLoopingAudioSource = false;         // you'll see in the code that we can add the additional step of composing a LoopingAudioSource  (makes no difference either way)
                                                       // My use case requires the use of LoopingAudioSource due to "non-gapless" IOS issue.
@@ -138,8 +138,9 @@ class _MyHomePageState extends State<MyHomePage> {
         child: audioSource,
         count: 2,
       );
-
     }
+
+    print("This version should ${makeItFail ? '' : 'not '}fail");
 
     await _player.setLoopMode(LoopMode.all);
     await _player.load(audioSource);
