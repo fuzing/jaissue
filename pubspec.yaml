@@ -34,8 +34,8 @@ dependencies:
     git:
       # url: https://github.com/ryanheise/just_audio.git
       url: git@github.com:ryanheise/just_audio.git
-      # ref: edab9a2ceeb5f70458e95c23a5b409b0828f0053
-      branch: master
+      ref: edab9a2ceeb5f70458e95c23a5b409b0828f0053
+      # branch: master
       path: just_audio
 
   audio_session: ^0.0.9
