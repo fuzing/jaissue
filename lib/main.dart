@@ -24,7 +24,7 @@ const bool makeItFail = true;                         // true selects larger fil
 const AccessType accessType = AccessType.Asset;       // where do you want the player to play from (see enum above)
 const bool composeLoopingAudioSource = false;         // you'll see in the code that we can add the additional step of composing a LoopingAudioSource  (makes no difference either way)
                                                       // My use case requires the use of LoopingAudioSource due to "non-gapless" IOS issue.
-const bool loopAudioSource = false;
+const bool loopAudioSource = true;
 
 void main() {
   runApp(MyApp());
@@ -56,6 +56,11 @@ class MyHomePage extends StatefulWidget {
 
 
 class _MyHomePageState extends State<MyHomePage> {
+  StreamSubscription<ProcessingState> _processingStateSubscription;
+  StreamSubscription<Duration> _positionSubscription;
+  StreamSubscription<Duration> _durationSubscription;
+
+
 
   static String bucketUrl = 'https://fuzing.s3.amazonaws.com/ja';
   static String fileNameBase = 'sample-audio-0';
@@ -66,8 +71,68 @@ class _MyHomePageState extends State<MyHomePage> {
 
 
   void _playNext() async {
-    _player?.dispose();
+    if (_player != null) {
+
+      try {
+        await _player.pause();
+      }
+      catch (e) {
+        print("player dispose _audioPlayer.pause() caught $e");
+      }
+
+      //
+      // Note/Warning - calling stop under certain circumstances (such as after background file has been removed from the filesystem) never returns
+      // await _audioPlayer.stop();
+      //
+
+      try {
+        await _processingStateSubscription.cancel();
+      }
+      catch (e) {
+        print("problem canceling _processingStateSubscription is $e");
+      }
+
+      try {
+        await _positionSubscription.cancel();
+      }
+      catch (e) {
+        print("problem canceling _positionSubscription is $e");
+      }
+
+      try {
+        await _durationSubscription.cancel();
+      }
+      catch (e) {
+        print("problem canceling _durationSubscription is $e");
+      }
+
+      try {
+        await _player.dispose();
+      }
+      catch (e) {
+        print("_audioPlayer.dispose() threw exception $e");
+      }
+
+    }
+      // _player?.dispose();
+
     _player = AudioPlayer(handleInterruptions: true);
+
+
+
+  _positionSubscription = _player.createPositionStream(
+      minPeriod: Duration(milliseconds: 500),
+      maxPeriod: Duration(milliseconds: 500),
+    ).listen((Duration position) async {});
+
+    _durationSubscription = _player.durationStream.distinct().listen((Duration duration) async {});
+
+    _processingStateSubscription = _player.processingStateStream.listen((state) {});
+
+
+
+
+
     String fullUrl = '$bucketUrl/$fileNameBase$_counter.m4a';
     print("Loading $fullUrl");
     await _player.setAudioSource(AudioSource.uri(Uri.parse(fullUrl)));
