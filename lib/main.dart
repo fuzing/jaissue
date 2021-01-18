@@ -5,6 +5,8 @@ import 'package:audio_session/audio_session.dart';
 import 'package:path_provider/path_provider.dart';
 import 'dart:io';
 
+import 'package:http/http.dart' as http;
+
 import 'package:flutter/services.dart';
 // import 'dart:async';
 
@@ -22,7 +24,7 @@ const bool makeItFail = true;                         // true selects larger fil
 const AccessType accessType = AccessType.Asset;       // where do you want the player to play from (see enum above)
 const bool composeLoopingAudioSource = false;         // you'll see in the code that we can add the additional step of composing a LoopingAudioSource  (makes no difference either way)
                                                       // My use case requires the use of LoopingAudioSource due to "non-gapless" IOS issue.
-
+const bool loopAudioSource = false;
 
 void main() {
   runApp(MyApp());
@@ -55,99 +57,123 @@ class MyHomePage extends StatefulWidget {
 
 class _MyHomePageState extends State<MyHomePage> {
 
-  // ./assets/ocean-waves.m4a - approx 800KB
-  // ./assets/10-second-audio.m4a - approx 100KB
-  static String assetName = makeItFail ? 'ocean-waves.m4a' : '10-second-audio.m4a';
-
   static String bucketUrl = 'https://fuzing.s3.amazonaws.com/ja';
+  static String fileNameBase = 'sample-audio-0';
 
   int _counter = 0;
   AudioPlayer _player;
   bool _isPlaying = false;
 
 
-  // static String _urlBase = 'https://fuzing.s3.amazonaws.com/ja/sample-audio-0';
+  void _playNext() async {
+    _player?.dispose();
+    _player = AudioPlayer(handleInterruptions: true);
+    String fullUrl = '$bucketUrl/$fileNameBase$_counter.m4a';
+    print("Loading $fullUrl");
+    await _player.setAudioSource(AudioSource.uri(Uri.parse(fullUrl)));
+
+    _player.play();
+
+    // trigger refresh
+    setState(() {
+      _counter = ++_counter % 10;
+    });
+  }
 
 
-  // void _playNext() async {
-  //   _player?.dispose();
-  //   _player = AudioPlayer(handleInterruptions: true);
-  //   String fullUrl = '$_urlBase$_counter.m4a';
-  //   print("Loading $fullUrl");
-  //   await _player.load(AudioSource.uri(Uri.parse(fullUrl)));
-  //   _player.play();
+  // //
+  // // copy the audio file to the file system so we have an "asset" version, and filesystem version.
+  // //    I also hosted a network version that you can check
+  // //
+  // Future<void> _copyAssetToFileSystem(String assetName) async {
+  //   String _docDir = (await getApplicationDocumentsDirectory()).path;
+  //   String pathName = "$_docDir/$assetName";
 
-  //   // trigger refresh
-  //   setState(() {
-  //     _counter = ++_counter % 10;
-  //   });
+  //   // maybe we already did this in a previous run
+  //   if (await File(pathName).exists())
+  //     return;
+
+  //   ByteData data = await rootBundle.load("assets/$assetName");
+  //   List<int> bytes = data.buffer.asUint8List(data.offsetInBytes, data.lengthInBytes);
+
+  //   await File(pathName).writeAsBytes(bytes);
+  // }
+
+  // //
+  // // copy an audio file from the network to the file system so we have an "network" version, and filesystem version.
+  // //
+  // Future<void> _copyNetworkToFileSystem(String fileName) async {
+  //   String _docDir = (await getApplicationDocumentsDirectory()).path;
+  //   String pathName = "$_docDir/$fileName";
+
+  //   // maybe we already did this in a previous run
+  //   if (await File(pathName).exists())
+  //     return;
+
+
+  //   final request = http.Request('GET', Uri.parse('$bucketUrl/$fileName'));
+  //   final http.StreamedResponse response = await http.Client().send(request);
+  //   if (response.statusCode >= 300)
+  //     throw "Error";
+
+  //   await response.stream.pipe(File('$_docDir/$fileName').openWrite());
+
+  //   print("Finished writing to local file");
+
+
+  //   // ByteData data = await rootBundle.load("assets/$assetName");
+  //   // List<int> bytes = data.buffer.asUint8List(data.offsetInBytes, data.lengthInBytes);
+
+  //   // await File(pathName).writeAsBytes(bytes);
   // }
 
 
-  //
-  // copy the audio file to the file system so we have an "asset" version, and filesystem version.
-  //    I also hosted a network version that you can check
-  //
-  Future<void> _copyAssetToFileSystem() async {
-    String _docDir = (await getApplicationDocumentsDirectory()).path;
-    String pathName = "$_docDir/$assetName";
+  // //
+  // // this is where the action is
+  // //
+  // void _playLoop() async {
+  //   if (_isPlaying)
+  //     return;
 
-    // maybe we already did this in a previous run
-    if (await File(pathName).exists())
-      return;
+  //   await _copyAssetToFileSystem();
 
-    ByteData data = await rootBundle.load("assets/$assetName");
-    List<int> bytes = data.buffer.asUint8List(data.offsetInBytes, data.lengthInBytes);
+  //   _player = AudioPlayer(handleInterruptions: true);
 
-    await File(pathName).writeAsBytes(bytes);
-  }
+  //   AudioSource audioSource;
+  //   String _docDir = (await getApplicationDocumentsDirectory()).path;
 
+  //   switch (accessType) {
+  //     case AccessType.Asset:
+  //       print("Playing Asset $assetName");
+  //       audioSource = AudioSource.uri(Uri.parse('asset:///assets/$assetName'));
+  //       break;
+  //     case AccessType.File:
+  //       print("Playing File $assetName");
+  //       audioSource = AudioSource.uri(Uri.parse('$_docDir/$assetName'));
+  //       break;
+  //     case AccessType.Network:
+  //       print("Playing Network $assetName");
+  //       audioSource = AudioSource.uri(Uri.parse('$bucketUrl/$assetName'));
+  //       break;
+  //   }
 
+  //   if (composeLoopingAudioSource) {
+  //     audioSource = LoopingAudioSource(
+  //       child: audioSource,
+  //       count: 2,
+  //     );
+  //   }
 
-  //
-  // this is where the action is
-  //
-  void _playLoop() async {
-    if (_isPlaying)
-      return;
+  //   print("This version should ${makeItFail ? '' : 'not '}fail");
 
-    await _copyAssetToFileSystem();
+  //   if (loopAudioSource)
+  //     await _player.setLoopMode(LoopMode.all);
 
-    _player = AudioPlayer(handleInterruptions: true);
+  //   await _player.setAudioSource(audioSource);
+  //   _player.play();
 
-    AudioSource audioSource;
-    String _docDir = (await getApplicationDocumentsDirectory()).path;
-
-    switch (accessType) {
-      case AccessType.Asset:
-        print("Playing Asset $assetName");
-        audioSource = AudioSource.uri(Uri.parse('asset:///assets/$assetName'));
-        break;
-      case AccessType.File:
-        print("Playing File $assetName");
-        audioSource = AudioSource.uri(Uri.parse('$_docDir/$assetName'));
-        break;
-      case AccessType.Network:
-        print("Playing Network $assetName");
-        audioSource = AudioSource.uri(Uri.parse('$bucketUrl/$assetName'));
-        break;
-    }
-
-    if (composeLoopingAudioSource) {
-      audioSource = LoopingAudioSource(
-        child: audioSource,
-        count: 2,
-      );
-    }
-
-    print("This version should ${makeItFail ? '' : 'not '}fail");
-
-    await _player.setLoopMode(LoopMode.all);
-    await _player.load(audioSource);
-    _player.play();
-
-    setState(() => _isPlaying = true);
-  }
+  //   setState(() => _isPlaying = true);
+  // }
 
 
   Future<void> _initSession() async {
@@ -181,8 +207,8 @@ class _MyHomePageState extends State<MyHomePage> {
         ),
       ),
       floatingActionButton: FloatingActionButton(
-        // onPressed: _playNext,
-        onPressed: _playLoop,
+        onPressed: _playNext,
+        // onPressed: _playLoop,
         tooltip: 'Play Next',
         child: Icon(Icons.add),
       ),
