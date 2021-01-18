@@ -72,6 +72,9 @@ class _MyHomePageState extends State<MyHomePage> {
     print("Loading $fullUrl");
     await _player.setAudioSource(AudioSource.uri(Uri.parse(fullUrl)));
 
+    if (loopAudioSource)
+      await _player.setLoopMode(LoopMode.all);
+
     _player.play();
 
     // trigger refresh
