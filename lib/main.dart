@@ -69,7 +69,7 @@ class _MyHomePageState extends State<MyHomePage> {
   AudioPlayer _player;
   bool _isPlaying = false;
 
-  List<AudioPlayer> _playersList = List<AudioPlayer>();
+  List<AudioPlayer> _playersList = [];
 
 
   void _play5() async {
@@ -77,6 +77,7 @@ class _MyHomePageState extends State<MyHomePage> {
     if (_playersList.length != 0) {
       for (final player in _playersList)
         player.dispose();
+      _playersList = [];
     }
 
     // start 5 players with 250 ms delay in between
