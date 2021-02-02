@@ -82,7 +82,7 @@ class _MyHomePageState extends State<MyHomePage> {
     // start 5 players with 250 ms delay in between
     for (int i = 0; i < 5; ++i) {
       AudioPlayer player = AudioPlayer(handleInterruptions: true);
-      AudioSource audioSource = AudioSource.uri(Uri.parse("asset:///assets/10-second-audio.m4a"));
+      AudioSource audioSource = AudioSource.uri(Uri.parse("asset:///assets/short-loop.m4a"));
       await player.setAudioSource(audioSource);
       await player.setLoopMode(LoopMode.one);
       await player.play();
