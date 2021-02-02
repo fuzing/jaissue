@@ -80,15 +80,21 @@ class _MyHomePageState extends State<MyHomePage> {
       _playersList = [];
     }
 
-    // start 5 players with 250 ms delay in between
-    for (int i = 0; i < 5; ++i) {
-      AudioPlayer player = AudioPlayer(handleInterruptions: true);
-      AudioSource audioSource = AudioSource.uri(Uri.parse("asset:///assets/short-loop.m4a"));
-      await player.setAudioSource(audioSource);
-      await player.setLoopMode(LoopMode.one);
-      await player.play();
-      _playersList.add(player);
-      await Future.delayed(Duration(milliseconds: 250));
+    // start 5 players with 1s delay in between each player
+    try {
+      for (int i = 0; i < 5; ++i) {
+        print("Starting player ${i+1}");
+        AudioPlayer player = AudioPlayer(handleInterruptions: true);
+        AudioSource audioSource = AudioSource.uri(Uri.parse("asset:///assets/short-loop.m4a"));
+        await player.setAudioSource(audioSource);
+        await player.setLoopMode(LoopMode.one);
+        player.play();
+        _playersList.add(player);
+        await Future.delayed(Duration(milliseconds: 1000));
+      }
+    }
+    catch (e) {
+      print(e);
     }
 
     // trigger refresh
@@ -99,83 +105,77 @@ class _MyHomePageState extends State<MyHomePage> {
 
 
 
-  void _playNext() async {
-    if (_player != null) {
+  // void _playNext() async {
+  //   if (_player != null) {
 
-      try {
-        await _player.pause();
-      }
-      catch (e) {
-        print("player dispose _audioPlayer.pause() caught $e");
-      }
+  //     try {
+  //       await _player.pause();
+  //     }
+  //     catch (e) {
+  //       print("player dispose _audioPlayer.pause() caught $e");
+  //     }
 
-      //
-      // Note/Warning - calling stop under certain circumstances (such as after background file has been removed from the filesystem) never returns
-      // await _audioPlayer.stop();
-      //
+  //     //
+  //     // Note/Warning - calling stop under certain circumstances (such as after background file has been removed from the filesystem) never returns
+  //     // await _audioPlayer.stop();
+  //     //
 
-      try {
-        await _processingStateSubscription.cancel();
-      }
-      catch (e) {
-        print("problem canceling _processingStateSubscription is $e");
-      }
+  //     try {
+  //       await _processingStateSubscription.cancel();
+  //     }
+  //     catch (e) {
+  //       print("problem canceling _processingStateSubscription is $e");
+  //     }
 
-      try {
-        await _positionSubscription.cancel();
-      }
-      catch (e) {
-        print("problem canceling _positionSubscription is $e");
-      }
+  //     try {
+  //       await _positionSubscription.cancel();
+  //     }
+  //     catch (e) {
+  //       print("problem canceling _positionSubscription is $e");
+  //     }
 
-      try {
-        await _durationSubscription.cancel();
-      }
-      catch (e) {
-        print("problem canceling _durationSubscription is $e");
-      }
+  //     try {
+  //       await _durationSubscription.cancel();
+  //     }
+  //     catch (e) {
+  //       print("problem canceling _durationSubscription is $e");
+  //     }
 
-      try {
-        await _player.dispose();
-      }
-      catch (e) {
-        print("_audioPlayer.dispose() threw exception $e");
-      }
+  //     try {
+  //       await _player.dispose();
+  //     }
+  //     catch (e) {
+  //       print("_audioPlayer.dispose() threw exception $e");
+  //     }
 
-    }
-      // _player?.dispose();
+  //   }
+  //     // _player?.dispose();
 
-    _player = AudioPlayer(handleInterruptions: true);
-
-
-
-  _positionSubscription = _player.createPositionStream(
-      minPeriod: Duration(milliseconds: 500),
-      maxPeriod: Duration(milliseconds: 500),
-    ).listen((Duration position) async {});
-
-    _durationSubscription = _player.durationStream.distinct().listen((Duration duration) async {});
-
-    _processingStateSubscription = _player.processingStateStream.listen((state) {});
+  //   _player = AudioPlayer(handleInterruptions: true);
 
 
 
+  // _positionSubscription = _player.createPositionStream(
+  //     minPeriod: Duration(milliseconds: 500),
+  //     maxPeriod: Duration(milliseconds: 500),
+  //   ).listen((Duration position) async {});
+  //   _durationSubscription = _player.durationStream.distinct().listen((Duration duration) async {});
+  //   _processingStateSubscription = _player.processingStateStream.listen((state) {});
 
+  //   String fullUrl = '$bucketUrl/$fileNameBase$_counter.m4a';
+  //   print("Loading $fullUrl");
+  //   await _player.setAudioSource(AudioSource.uri(Uri.parse(fullUrl)));
 
-    String fullUrl = '$bucketUrl/$fileNameBase$_counter.m4a';
-    print("Loading $fullUrl");
-    await _player.setAudioSource(AudioSource.uri(Uri.parse(fullUrl)));
+  //   if (loopAudioSource)
+  //     await _player.setLoopMode(LoopMode.all);
 
-    if (loopAudioSource)
-      await _player.setLoopMode(LoopMode.all);
+  //   _player.play();
 
-    _player.play();
-
-    // trigger refresh
-    setState(() {
-      _counter = ++_counter % 10;
-    });
-  }
+  //   // trigger refresh
+  //   setState(() {
+  //     _counter = ++_counter % 10;
+  //   });
+  // }
 
 
   // //
