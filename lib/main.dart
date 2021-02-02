@@ -69,6 +69,34 @@ class _MyHomePageState extends State<MyHomePage> {
   AudioPlayer _player;
   bool _isPlaying = false;
 
+  List<AudioPlayer> _playersList = List<AudioPlayer>();
+
+
+  void _play5() async {
+
+    if (_playersList.length != 0) {
+      for (final player in _playersList)
+        player.dispose();
+    }
+
+    // start 5 players with 250 ms delay in between
+    for (int i = 0; i < 5; ++i) {
+      AudioPlayer player = AudioPlayer(handleInterruptions: true);
+      AudioSource audioSource = AudioSource.uri(Uri.parse("asset:///assets/10-second-audio.m4a"));
+      await player.setAudioSource(audioSource);
+      await player.setLoopMode(LoopMode.one);
+      await player.play();
+      _playersList.add(player);
+      await Future.delayed(Duration(milliseconds: 250));
+    }
+
+    // trigger refresh
+    setState(() {
+      _counter = ++_counter % 10;
+    });
+  }
+
+
 
   void _playNext() async {
     if (_player != null) {
@@ -275,7 +303,8 @@ class _MyHomePageState extends State<MyHomePage> {
         ),
       ),
       floatingActionButton: FloatingActionButton(
-        onPressed: _playNext,
+        onPressed: _play5,
+        // onPressed: _playNext,
         // onPressed: _playLoop,
         tooltip: 'Play Next',
         child: Icon(Icons.add),
