@@ -80,7 +80,6 @@ class _MyHomePageState extends State<MyHomePage> {
       _playersList = [];
     }
 
-    // start 5 players with 1s delay in between each player
     try {
       for (int i = 0; i < 5; ++i) {
         print("Starting player ${i+1}");
@@ -90,7 +89,7 @@ class _MyHomePageState extends State<MyHomePage> {
         await player.setLoopMode(LoopMode.one);
         player.play();
         _playersList.add(player);
-        await Future.delayed(Duration(milliseconds: 1000));
+        // await Future.delayed(Duration(milliseconds: 1000));
       }
     }
     catch (e) {
