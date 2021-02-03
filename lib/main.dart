@@ -89,6 +89,7 @@ class _MyHomePageState extends State<MyHomePage> {
         await player.setLoopMode(LoopMode.one);
         player.play();
         _playersList.add(player);
+        await player.setVolume(i == 0 ? 1.0 : 0.25);
         // await Future.delayed(Duration(milliseconds: 1000));
       }
     }
