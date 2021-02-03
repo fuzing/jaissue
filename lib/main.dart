@@ -85,7 +85,7 @@ class _MyHomePageState extends State<MyHomePage> {
       for (int i = 0; i < 5; ++i) {
         print("Starting player ${i+1}");
         AudioPlayer player = AudioPlayer(handleInterruptions: true);
-        AudioSource audioSource = AudioSource.uri(Uri.parse("asset:///assets/short-loop.m4a"));
+        AudioSource audioSource = AudioSource.uri(Uri.parse("asset:///assets/short-audio-${(i%4)+1}.m4a"));
         await player.setAudioSource(audioSource);
         await player.setLoopMode(LoopMode.one);
         player.play();
