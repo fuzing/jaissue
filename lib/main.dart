@@ -81,7 +81,7 @@ class _MyHomePageState extends State<MyHomePage> {
     }
 
     try {
-      for (int i = 0; i < 5; ++i) {
+      for (int i = 0; i < 3; ++i) {
         print("Starting player ${i+1}");
         AudioPlayer player = AudioPlayer(handleInterruptions: true);
         AudioSource audioSource = AudioSource.uri(Uri.parse("asset:///assets/short-audio-${(i%4)+1}.m4a"));
